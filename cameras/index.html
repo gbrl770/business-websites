@@ -37,7 +37,7 @@
     --transition:0.25s ease;
   }
   *{margin:0;padding:0;box-sizing:border-box;}
-  html{scroll-behavior:smooth;}
+  html{scroll-behavior:smooth;max-width:100%;overflow-x:hidden;}
   body{
     font-family:'Heebo','Inter',Arial,sans-serif;
     color:var(--color-text);
@@ -47,9 +47,14 @@
     font-size:16px;
   }
   /* כאשר האתר ב-LTR (אנגלית/רוסית), נעדיף את גופן Inter לקריאות טובה יותר */
-  html[dir="ltr"] body{font-family:'Inter','Heebo',Arial,sans-serif;}
+  html[dir="ltr"] body{font-family:'Inter','Heebo',Arial,sans-serif;direction:ltr;}
+  html[dir="rtl"] body{direction:rtl;}
 
   img{max-width:100%;display:block;}
+  *, *::before, *::after{min-width:0;}
+  body, main, header, footer, section, .container{max-width:100%;}
+  .hero-content, .hero-media, .about-text, .about-media, .contact-grid > *, .contact-form, .contact-info-card{min-width:0;}
+  h1,h2,h3,p,a,span,button,label{overflow-wrap:anywhere;word-break:normal;}
   a{text-decoration:none;color:inherit;}
   ul{list-style:none;}
   button{font-family:inherit;cursor:pointer;border:none;background:none;}
@@ -111,19 +116,19 @@
      HEADER
      ============================================================ */
   header{position:sticky;top:0;z-index:1000;background:rgba(255,255,255,0.97);backdrop-filter:blur(6px);border-bottom:1px solid var(--color-border);}
-  .header-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;max-width:var(--max-width);margin:0 auto;gap:16px;}
+  .header-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;max-width:var(--max-width);width:100%;margin:0 auto;gap:16px;min-width:0;}
   .logo{display:flex;align-items:center;gap:11px;font-weight:900;font-size:1.22rem;color:var(--color-primary);flex-shrink:0;}
   .logo-icon{width:42px;height:42px;background:var(--color-primary);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
   .logo-icon svg{width:23px;height:23px;stroke:#fff;}
 
-  nav.main-nav{display:flex;align-items:center;gap:26px;}
+  nav.main-nav{display:flex;align-items:center;gap:26px;min-width:0;}
   nav.main-nav a{font-weight:500;color:var(--color-text);font-size:0.97rem;position:relative;transition:var(--transition);padding:6px 0;white-space:nowrap;}
   nav.main-nav a::after{content:"";position:absolute;right:0;bottom:0;width:0;height:2px;background:var(--color-accent);transition:var(--transition);}
   html[dir="ltr"] nav.main-nav a::after{right:auto;left:0;}
   nav.main-nav a:hover{color:var(--color-accent-dark);}
   nav.main-nav a:hover::after{width:100%;}
 
-  .header-actions{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+  .header-actions{display:flex;align-items:center;gap:10px;flex-shrink:0;min-width:0;}
 
   .hamburger{display:none;flex-direction:column;gap:5px;width:34px;height:34px;align-items:center;justify-content:center;}
   .hamburger span{display:block;height:2.5px;width:24px;background:var(--color-primary);border-radius:2px;transition:var(--transition);}
@@ -302,8 +307,11 @@
   }
 
   @media (max-width:900px){
+    .header-inner{width:100%;max-width:100vw;}
+    .header-actions{margin-inline-start:auto;}
+
     nav.main-nav{
-      position:fixed;top:69px;right:0;left:0;background:#fff;
+      position:fixed;top:69px;right:0;left:0;width:100%;max-width:100vw;background:#fff;
       flex-direction:column;align-items:flex-start;gap:0;
       padding:10px 24px 20px;border-bottom:1px solid var(--color-border);
       box-shadow:0 12px 20px rgba(15,41,66,0.08);
@@ -1105,7 +1113,8 @@ function setLanguage(lang){
   currentLang = lang;
 
   document.documentElement.lang = lang;
-  document.documentElement.dir = dict.dir;
+  document.documentElement.dir = (lang === 'he') ? 'rtl' : 'ltr';
+  document.body.dir = document.documentElement.dir;
 
   document.getElementById('pageTitle').textContent = dict.meta.title;
   document.title = dict.meta.title;
@@ -1144,6 +1153,11 @@ function setLanguage(lang){
   const notesEls = document.querySelectorAll('.areas-note[data-i18n="areas.note"]');
   notesEls.forEach(el => { el.innerHTML = dict.areas.note; });
 }
+
+// שומר על החלפת שפה יציבה גם בדפדפנים שבהם onclick/inline handlers מוגבלים
+document.querySelectorAll('.lang-btn, .footer-lang button').forEach(btn => {
+  btn.addEventListener('click', () => setLanguage(btn.getAttribute('data-lang')));
+});
 
 function scrollToContactForm(){
   const contactSection = document.getElementById('contact');
